@@ -40,7 +40,7 @@ public class Terracraft implements Runnable
         TextureManager.RegisterTexture(Texture.Register("textures/entity/pig.png", "entity_pig"));
 
         Input.Initialize();
-        Window.Generate("Terracraft* 0.3.4", new Vector2i(750, 450), new Vector3f(0.0f, 0.45f, 0.75f));
+        Window.Generate("Terracraft* 0.3.5", new Vector2i(750, 450), new Vector3f(0.0f, 0.45f, 0.75f));
 
         player.Initialize(new Vector3f(0, 20, 0));
 

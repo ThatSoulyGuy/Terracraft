@@ -21,6 +21,16 @@ public class Chunk
         Initialize(position, false);
     }
 
+    private int GetBlockTypeForPosition(int x, int y, int z)
+    {
+        if (y == 15)
+            return BlockType.BLOCK_GRASS.GetType();
+        else if (y > 12)
+            return BlockType.BLOCK_DIRT.GetType();
+        else
+            return BlockType.BLOCK_STONE.GetType();
+    }
+
     public void Initialize(Vector3i position, boolean generateNothing)
     {
         data.transform = TransformI.Register(position);
@@ -43,16 +53,7 @@ public class Chunk
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
                     for (int z = 0; z < CHUNK_SIZE; z++)
-                    {
-                        if (y > 12)
-                            data.blocks[x][y][z] = BlockType.BLOCK_DIRT.GetType();
-                        else if (y == 12)
-                            data.blocks[x][y][z] = (Math.random() < 0.654) ? BlockType.BLOCK_DIRT.GetType() : BlockType.BLOCK_STONE.GetType();
-                        else
-                            data.blocks[x][y][z] = BlockType.BLOCK_STONE.GetType();
-
-                        data.blocks[x][15][z] = BlockType.BLOCK_GRASS.GetType();
-                    }
+                        data.blocks[x][y][z] = GetBlockTypeForPosition(x, y, z);
                 }
             }
         }
@@ -79,8 +80,6 @@ public class Chunk
             return;
 
         data.blocks[position.x][position.y][position.z] = type.GetType();
-
-        Vector3i blockKey = new Vector3i(position);
 
         if (type == BlockType.BLOCK_AIR)
             data.blockAABBs.remove(position);

@@ -33,7 +33,7 @@ public abstract class LivingEntity extends Entity
 
     public void AddMovement(MovementImpulse direction)
     {
-        float moveStep = movementSpeed;
+        float moveStep = movementSpeed * deltaTime;
         Vector3f potentialPosition = new Vector3f(transform.position);
 
         float yawRadians = (float) Math.toRadians(transform.rotation.y);
@@ -51,20 +51,21 @@ public abstract class LivingEntity extends Entity
 
         if (direction == MovementImpulse.FORWARD || direction == MovementImpulse.BACKWARD)
         {
-            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? movementSpeed : -movementSpeed;
-            Vector3f movement = new Vector3f(right).mul(moveStep * directionMultiplier);
-            potentialPosition.add(movement);
+            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? 1 : -1;
+            potentialPosition.add(right.mul(moveStep * directionMultiplier));
         }
 
         if (direction == MovementImpulse.RIGHT || direction == MovementImpulse.LEFT)
         {
-            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? movementSpeed : -movementSpeed;
-            Vector3f movement = new Vector3f(forward).mul(moveStep * directionMultiplier);
-            potentialPosition.add(movement);
+            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? 1 : -1;
+            potentialPosition.add(forward.mul(moveStep * directionMultiplier));
         }
 
-        if (!ProcessRegularBlockCollisions(potentialPosition, boundingBox))
-            transform.position.set(potentialPosition);
+        Vector3f collisionResponse = ProcessCollisions(potentialPosition);
+        potentialPosition.add(collisionResponse);
+
+        transform.position.set(potentialPosition);
+        boundingBox.Update(transform.position);
     }
 
     public void Jump()

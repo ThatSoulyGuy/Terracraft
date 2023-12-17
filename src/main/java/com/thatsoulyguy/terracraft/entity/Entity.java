@@ -125,8 +125,11 @@ public abstract class Entity
         List<Vector3i> chunks = new ArrayList<>();
         for (int x = -1; x <= 1; x++)
         {
-            for (int z = -1; z <= 1; z++)
-                chunks.add(new Vector3i(chunkCoords.x + x, 0, chunkCoords.z + z));
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int z = -1; z <= 1; z++)
+                    chunks.add(new Vector3i(chunkCoords.x + x, chunkCoords.y + y, chunkCoords.z + z));
+            }
         }
 
         return chunks;

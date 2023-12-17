@@ -150,7 +150,7 @@ public class Player extends LivingEntity
     @Override
     public LivingEntityRegistration LE_Register()
     {
-        return LivingEntityRegistration.Register(20.0f, 0.4f);
+        return LivingEntityRegistration.Register(20.0f, 6.5f);
     }
 
     @Override
