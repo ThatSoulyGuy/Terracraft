@@ -1,36 +1,27 @@
 package com.thatsoulyguy.terracraft.entity;
 
-import com.thatsoulyguy.terracraft.core.Input;
 import com.thatsoulyguy.terracraft.core.LogLevel;
 import com.thatsoulyguy.terracraft.core.Logger;
-import com.thatsoulyguy.terracraft.core.PressType;
-import com.thatsoulyguy.terracraft.math.AABB;
-import com.thatsoulyguy.terracraft.math.Transform;
+import com.thatsoulyguy.terracraft.core.Settings;
 import org.joml.Math;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
 
 public abstract class LivingEntity extends Entity
 {
-    private static final float JUMP_FORCE = 5.2f;
-
     public float health;
     public float maxHealth;
 
     public float movementSpeed;
 
-    public void LEBase_Initialize()
+    public void LEBase_Initialize(Vector3f position)
     {
-        EBase_Initialize(null, null, true);
+        EBase_Initialize(position);
 
-        LivingEntityRegistration registration = Register();
+        LivingEntityRegistration registration = LE_Register();
 
         health = registration.health;
         maxHealth = registration.maxHealth;
         movementSpeed = registration.movementSpeed;
-
-        boundingBox = AABB.Register(new Vector3f(transform.position.x + 0.5f, transform.position.y, transform.position.z + 0.5f), registration.aabbDimensions);
-        boundingBox.Update(transform.position);
     }
 
     public void LEBase_Update()
@@ -38,13 +29,14 @@ public abstract class LivingEntity extends Entity
         EBase_Update();
     }
 
+    public abstract LivingEntityRegistration LE_Register();
+
     public void AddMovement(MovementImpulse direction)
     {
         float moveStep = movementSpeed;
         Vector3f potentialPosition = new Vector3f(transform.position);
 
         float yawRadians = (float) Math.toRadians(transform.rotation.y);
-
         Vector3f forward = new Vector3f(
                 (float) -Math.sin(yawRadians),
                 0,
@@ -59,20 +51,20 @@ public abstract class LivingEntity extends Entity
 
         if (direction == MovementImpulse.FORWARD || direction == MovementImpulse.BACKWARD)
         {
-            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? 1 : -1;
+            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? movementSpeed : -movementSpeed;
             Vector3f movement = new Vector3f(right).mul(moveStep * directionMultiplier);
             potentialPosition.add(movement);
         }
 
         if (direction == MovementImpulse.RIGHT || direction == MovementImpulse.LEFT)
         {
-            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? 1 : -1;
+            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? movementSpeed : -movementSpeed;
             Vector3f movement = new Vector3f(forward).mul(moveStep * directionMultiplier);
             potentialPosition.add(movement);
         }
 
-        ResolveCollisionsUnified(potentialPosition);
-        transform.position.set(potentialPosition);
+        if (!ProcessRegularBlockCollisions(potentialPosition, boundingBox))
+            transform.position.set(potentialPosition);
     }
 
     public void Jump()
@@ -80,10 +72,6 @@ public abstract class LivingEntity extends Entity
         boolean onGround = IsOnGround();
 
         if (onGround)
-            verticalVelocity = JUMP_FORCE;
-
-        Logger.WriteConsole(onGround ? "on ground " + transform.position.y : "OFF GROUND " + transform.position.y, LogLevel.DEBUG);
+            verticalVelocity = Settings.JUMP_FORCE;
     }
-
-    public abstract LivingEntityRegistration Register();
 }

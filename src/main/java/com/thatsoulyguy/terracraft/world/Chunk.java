@@ -83,31 +83,51 @@ public class Chunk
         Vector3i blockKey = new Vector3i(position);
 
         if (type == BlockType.BLOCK_AIR)
-            data.blockAABBs.remove(blockKey);
-        else if (BlockExposed(position.x, position.y, position.z))
-        {
-            Vector3f blockPosition = new Vector3f(position.x + 0.5f, position.y + 0.5f, position.z + 0.5f).add(new Vector3f(data.transform.position.x, data.transform.position.y, data.transform.position.z));
-            Vector3f blockDimensions = new Vector3f(1.0f, 1.0f, 1.0f);
-
-            AABB blockAABB = AABB.Register(blockPosition, blockDimensions);
-
-            data.blockAABBs.put(blockKey, blockAABB);
-        }
+            data.blockAABBs.remove(position);
         else
-            data.blockAABBs.remove(blockKey);
+        {
+            if (BlockExposed(position.x, position.y, position.z))
+            {
+                AABB blockAABB = GenerateBlockAABB(position);
+                data.blockAABBs.put(position, blockAABB);
+            }
+        }
+
+        UpdateNeighboringBlocksAABBs(position);
 
         Rebuild();
     }
 
+    private void UpdateNeighboringBlocksAABBs(Vector3i position)
+    {
+        for (int dx = -1; dx <= 1; dx++)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dz = -1; dz <= 1; dz++)
+                {
+                    Vector3i neighborPos = new Vector3i(position.x + dx, position.y + dy, position.z + dz);
+                    if (BlockExposed(neighborPos.x, neighborPos.y, neighborPos.z))
+                    {
+                        AABB blockAABB = GenerateBlockAABB(neighborPos);
+                        data.blockAABBs.put(neighborPos, blockAABB);
+                    }
+                    else
+                        data.blockAABBs.remove(neighborPos);
+                }
+            }
+        }
+    }
+
     public boolean HasBlock(Vector3i position)
     {
-        if (position.x < 0 || position.x >= Chunk.CHUNK_SIZE) 
+        if (position.x < 0 || position.x >= Chunk.CHUNK_SIZE)
             return false;
         
-        if (position.y < 0 || position.y >= Chunk.CHUNK_SIZE) 
+        if (position.y < 0 || position.y >= Chunk.CHUNK_SIZE)
             return false;
         
-        if (position.z < 0 || position.z >= Chunk.CHUNK_SIZE) 
+        if (position.z < 0 || position.z >= Chunk.CHUNK_SIZE)
             return false;
 
         return data.blocks[position.x][position.y][position.z] != BlockType.BLOCK_AIR.GetType();
@@ -143,6 +163,7 @@ public class Chunk
     {
         data.vertices.clear();
         data.indices.clear();
+        data.blockAABBs.clear();
         data.indicesIndex = 0;
 
         for(int x = 0; x < CHUNK_SIZE; x++)
@@ -176,11 +197,9 @@ public class Chunk
 
                     if (BlockExposed(x, y, z))
                     {
-                        Vector3f blockPosition = new Vector3f(x + 0.5f, y + 0.5f, z + 0.5f).add(new Vector3f(data.transform.position.x, data.transform.position.y, data.transform.position.z));
-                        Vector3f blockDimensions = new Vector3f(1.0f, 1.0f, 1.0f);
-
-                        AABB blockAABB = AABB.Register(blockPosition, blockDimensions);
-                        data.blockAABBs.put(new Vector3i(x, y, z), blockAABB);
+                        Vector3i blockPos = new Vector3i(x, y, z);
+                        AABB blockAABB = GenerateBlockAABB(blockPos);
+                        data.blockAABBs.put(blockPos, blockAABB);
                     }
                 }
             }
@@ -204,6 +223,14 @@ public class Chunk
 
         TaskExecutor.QueueTask(() ->
             Renderer.RegisterRenderableObject(data.mesh));
+    }
+
+    private AABB GenerateBlockAABB(Vector3i blockPosition)
+    {
+        Vector3f worldPos = new Vector3f(blockPosition.x + data.transform.position.x + 0.5f, blockPosition.y + data.transform.position.y + 0.5f, blockPosition.z + data.transform.position.z + 0.5f);
+        Vector3f blockDimensions = new Vector3f(1.0f, 1.0f, 1.0f);
+
+        return AABB.Register(worldPos, blockDimensions);
     }
 
     private boolean BlockExposed(int x, int y, int z)

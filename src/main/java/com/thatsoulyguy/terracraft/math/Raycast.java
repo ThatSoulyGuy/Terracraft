@@ -1,6 +1,5 @@
 package com.thatsoulyguy.terracraft.math;
 
-import com.thatsoulyguy.terracraft.Terracraft;
 import com.thatsoulyguy.terracraft.world.Chunk;
 import com.thatsoulyguy.terracraft.world.World;
 import org.joml.Vector3f;

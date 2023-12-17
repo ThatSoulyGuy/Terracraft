@@ -2,9 +2,8 @@ package com.thatsoulyguy.terracraft.player;
 
 import com.thatsoulyguy.terracraft.core.Input;
 import com.thatsoulyguy.terracraft.core.PressType;
-import com.thatsoulyguy.terracraft.entity.LivingEntity;
-import com.thatsoulyguy.terracraft.entity.LivingEntityRegistration;
-import com.thatsoulyguy.terracraft.entity.MovementImpulse;
+import com.thatsoulyguy.terracraft.entity.*;
+import com.thatsoulyguy.terracraft.math.AABB;
 import com.thatsoulyguy.terracraft.math.Raycast;
 import com.thatsoulyguy.terracraft.records.NameIDTag;
 import com.thatsoulyguy.terracraft.render.RenderableObject;
@@ -20,11 +19,13 @@ public class Player extends LivingEntity
 {
     public PlayerData data = new PlayerData();
 
-    private float cameraOffset = 1.55f;
+    private float cameraOffset = 1.34f;
+    private final float cameraOffsetStart = 1.34f;
 
     public void Initialize(Vector3f position)
     {
         data.camera.Initialize(position);
+        LEBase_Initialize(new Vector3f(position));
 
         Input.SetCursorMode(false);
         transform.position = position;
@@ -32,8 +33,6 @@ public class Player extends LivingEntity
         data.wireframeBox.GenerateCube();
         data.wireframeBox.data.active = false;
         Renderer.RegisterRenderableObject(data.wireframeBox);
-
-        LEBase_Initialize();
     }
 
     public void Update()
@@ -122,9 +121,9 @@ public class Player extends LivingEntity
             Jump();
 
         if (Input.GetKey(GLFW.GLFW_KEY_LEFT_SHIFT, PressType.PRESSED))
-            cameraOffset = 1.34f;
+            cameraOffset = 1.2f;
         else
-            cameraOffset = 1.55f;
+            cameraOffset = cameraOffsetStart;
     }
 
     private void UpdateMouseLook()
@@ -149,8 +148,16 @@ public class Player extends LivingEntity
     }
 
     @Override
-    public LivingEntityRegistration Register()
+    public LivingEntityRegistration LE_Register()
     {
-        return LivingEntityRegistration.Register(20, 0.1f, new Vector3f(0.4f, 1.98f, 0.4f));
+        return LivingEntityRegistration.Register(20.0f, 0.4f);
     }
+
+    @Override
+    public EntityRegistration E_Register()
+    {
+        return EntityRegistration.Register("", EntityType.ENTITY_PLAYER, AABB.Register(new Vector3f(0, 0, 0), new Vector3f(0.4f, 1.98f, 0.4f)));
+    }
+
+
 }
