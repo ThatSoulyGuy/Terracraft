@@ -1,2 +1,8 @@
-package com.thatsoulyguy.terracraft.core;public class PressType {
+package com.thatsoulyguy.terracraft.core;
+
+public enum PressType
+{
+    NONE,
+    PRESSED,
+    RELEASED
 }

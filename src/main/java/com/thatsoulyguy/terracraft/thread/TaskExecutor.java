@@ -1,4 +1,4 @@
-package com.thatsoulyguy.terracraft.threading;
+package com.thatsoulyguy.terracraft.thread;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
