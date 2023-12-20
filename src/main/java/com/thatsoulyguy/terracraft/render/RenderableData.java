@@ -12,8 +12,8 @@ import java.util.List;
 public class RenderableData
 {
     public NameIDTag name;
-    public List<Vertex> vertices = Collections.synchronizedList(new ArrayList<>());
-    public List<Integer> indices = Collections.synchronizedList(new ArrayList<>());
+    public List<Vertex> vertices = new ArrayList<>();
+    public List<Integer> indices = new ArrayList<>();
     public ShaderObject shader;
 
     public HashMap<String, Texture> textures = new HashMap<>();

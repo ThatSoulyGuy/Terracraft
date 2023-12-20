@@ -9,6 +9,8 @@ import com.thatsoulyguy.terracraft.render.Vertex;
 import com.thatsoulyguy.terracraft.thread.TaskExecutor;
 import org.joml.*;
 import org.joml.Math;
+import org.spongepowered.noise.Noise;
+import org.spongepowered.noise.NoiseQuality;
 
 public class Chunk
 {
@@ -21,14 +23,40 @@ public class Chunk
         Initialize(position, false);
     }
 
-    private int GetBlockTypeForPosition(int x, int y, int z)
+    private int GetBlockTypeForPosition(int x, int y, int z, Vector3i chunkPosition)
     {
-        if (y == 15)
-            return BlockType.BLOCK_GRASS.GetType();
-        else if (y > 12)
-            return BlockType.BLOCK_DIRT.GetType();
+        double scale = 0.1;
+        double heightScale = 15.0;
+        int seaLevel = 12;
+
+        double noiseValue = 0.0;
+        double amplitude = 0.5;
+        double frequency = 1.0;
+        double persistence = 0.5;
+
+        for (int octave = 0; octave < 4; octave++)
+        {
+            noiseValue += amplitude * Noise.valueCoherentNoise3D((x + chunkPosition.x * CHUNK_SIZE) * scale * frequency, (y + chunkPosition.y * CHUNK_SIZE) * scale * frequency, (z + chunkPosition.z * CHUNK_SIZE) * scale * frequency, 1, NoiseQuality.BEST);
+
+            amplitude *= persistence;
+            frequency *= 2.0;
+        }
+
+        int terrainHeight = (int)(noiseValue * heightScale + seaLevel);
+
+        int newY = y + chunkPosition.y;
+
+        if (newY < terrainHeight)
+        {
+            if (newY <= terrainHeight - 7)
+                return BlockType.BLOCK_STONE.GetType();
+            else if (newY < terrainHeight - 1)
+                return BlockType.BLOCK_DIRT.GetType();
+            else
+                return BlockType.BLOCK_GRASS.GetType();
+        }
         else
-            return BlockType.BLOCK_STONE.GetType();
+            return BlockType.BLOCK_AIR.GetType();
     }
 
     public void Initialize(Vector3i position, boolean generateNothing)
@@ -53,17 +81,16 @@ public class Chunk
                 for (int y = 0; y < CHUNK_SIZE; y++)
                 {
                     for (int z = 0; z < CHUNK_SIZE; z++)
-                        data.blocks[x][y][z] = GetBlockTypeForPosition(x, y, z);
+                        data.blocks[x][y][z] = GetBlockTypeForPosition(x, y, z, new Vector3i(position));
                 }
             }
         }
 
+        data.mesh = RenderableObject.Register(NameIDTag.Register(String.format("Chunk_%d_%d_%d", position.x, position.y, position.z), data.mesh), null, null);
+        data.mesh.data.transform = data.transform.ToTransform();
+
         TaskExecutor.QueueTask(() ->
-        {
-            data.mesh = RenderableObject.Register(NameIDTag.Register(String.format("Chunk_%d_%d_%d", position.x, position.y, position.z), data.mesh), null, null);
-            data.mesh.data.transform = data.transform.ToTransform();
-            data.mesh.RegisterTexture("atlas");
-        });
+            data.mesh.RegisterTexture("atlas"));
 
         Rebuild();
     }
@@ -205,20 +232,18 @@ public class Chunk
         }
 
         TaskExecutor.QueueTask(() ->
-                data.mesh.RegisterData(data.vertices, data.indices));
-
-        if(data.firstRebuild)
         {
-            TaskExecutor.QueueTask(() ->
-                data.mesh.Generate());
+            data.mesh.RegisterData(data.vertices, data.indices);
 
-            data.firstRebuild = false;
-        }
-        else
-        {
-            TaskExecutor.QueueTask(() ->
-                data.mesh.ReGenerate());
-        }
+            if(data.firstRebuild)
+            {
+                data.mesh.Generate();
+                data.firstRebuild = false;
+            }
+            else
+                data.mesh.ReGenerate();
+
+        });
 
         TaskExecutor.QueueTask(() ->
             Renderer.RegisterRenderableObject(data.mesh));

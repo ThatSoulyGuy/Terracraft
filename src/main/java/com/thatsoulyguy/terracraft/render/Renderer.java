@@ -19,18 +19,12 @@ public class Renderer
 
     public static void RegisterRenderableObject(RenderableObject object)
     {
-        synchronized (registeredObjects)
-        {
-            registeredObjects.put(object.data.name, object);
-        }
+        registeredObjects.put(object.data.name, object);
     }
 
     public static void RemoveRenderableObject(NameIDTag tag)
     {
-        synchronized (registeredObjects)
-        {
-            registeredObjects.remove(tag);
-        }
+        registeredObjects.remove(tag);
     }
 
     public static void RenderObjects(Camera camera)

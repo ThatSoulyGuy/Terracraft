@@ -64,17 +64,19 @@ public class World
 
         for (int x = -VIEW_DISTANCE; x <= VIEW_DISTANCE; x++)
         {
-            for (int z = -VIEW_DISTANCE; z <= VIEW_DISTANCE; z++)
+            for (int y = 0; y < 3; y++)
             {
-                Vector3i chunkCoordinate = new Vector3i(playerChunkCoordinates.x + x, 0, playerChunkCoordinates.z + z);
-
-                if (!chunks.containsKey(chunkCoordinate))
+                for (int z = -VIEW_DISTANCE; z <= VIEW_DISTANCE; z++)
                 {
-                    Chunk chunk = new Chunk();
+                    Vector3i chunkCoordinate = new Vector3i(playerChunkCoordinates.x + x, y, playerChunkCoordinates.z + z);
 
-                    Vector3i worldPosition = new Vector3i(chunkCoordinate.x * Chunk.CHUNK_SIZE, chunkCoordinate.y * Chunk.CHUNK_SIZE, chunkCoordinate.z * Chunk.CHUNK_SIZE);
+                    if (!chunks.containsKey(chunkCoordinate))
+                    {
+                        Chunk chunk = new Chunk();
 
-                    chunk.Initialize(worldPosition);
+                        Vector3i worldPosition = new Vector3i(chunkCoordinate.x * Chunk.CHUNK_SIZE, chunkCoordinate.y * Chunk.CHUNK_SIZE, chunkCoordinate.z * Chunk.CHUNK_SIZE);
+
+                        chunk.Initialize(worldPosition);
 
                     /*
                     if(chunks.containsKey(new Vector3i(chunkCoordinate.x, chunkCoordinate.y + 1, chunkCoordinate.z)))
@@ -96,9 +98,10 @@ public class World
                         UpdateChunkOcclusion(chunks.get(chunkChecklistCoordinate));
                     */
 
-                    UpdateChunkOcclusion(chunk);
+                        UpdateChunkOcclusion(chunk);
 
-                    chunks.put(chunkCoordinate, chunk);
+                        chunks.put(chunkCoordinate, chunk);
+                    }
                 }
             }
         }
@@ -106,7 +109,7 @@ public class World
         HashSet<Vector3i> chunkSet = new HashSet<>(chunks.keySet());
         for(Vector3i chunkCoordinate : chunkSet)
         {
-            if((Math.abs(chunkCoordinate.x - playerChunkCoordinates.x) > VIEW_DISTANCE) && (Math.abs(chunkCoordinate.z - playerChunkCoordinates.z) > VIEW_DISTANCE))
+            if((Math.abs(chunkCoordinate.x - playerChunkCoordinates.x) > VIEW_DISTANCE) && (Math.abs(chunkCoordinate.y - playerChunkCoordinates.y) > VIEW_DISTANCE) && (Math.abs(chunkCoordinate.z - playerChunkCoordinates.z) > VIEW_DISTANCE))
             {
                 chunks.get(chunkCoordinate).CleanUp();
                 chunks.remove(chunkCoordinate);

@@ -30,7 +30,6 @@ public class Terracraft implements Runnable
     public void Initialize()
     {
         Logger.WriteConsole("Hello, Terracraft!", LogLevel.INFO);
-
         Window.Initialize();
 
         ShaderManager.RegisterShader(ShaderObject.Register("shaders/default", "default"));
@@ -42,9 +41,9 @@ public class Terracraft implements Runnable
         Input.Initialize();
         Window.Generate("Terracraft* 0.3.6", new Vector2i(750, 450), new Vector3f(0.0f, 0.45f, 0.75f));
 
-        player.Initialize(new Vector3f(0, 20, 0));
+        player.Initialize(new Vector3f(0, 100, 0));
 
-        pig.Initialize(new Vector3f(0, 40, 0));
+        pig.Initialize(new Vector3f(0, 100, 0));
 
         World.Initialize();
         World.StartUpdating(player.transform.position);
@@ -59,6 +58,7 @@ public class Terracraft implements Runnable
         player.Update();
         pig.Update();
 
+        //World.Update(player.transform.position);
         TaskExecutor.UpdateTasks();
 
         Renderer.RenderObjects(player.data.camera);

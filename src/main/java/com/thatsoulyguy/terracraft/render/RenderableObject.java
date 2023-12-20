@@ -3,6 +3,7 @@ package com.thatsoulyguy.terracraft.render;
 import com.thatsoulyguy.terracraft.core.LogLevel;
 import com.thatsoulyguy.terracraft.core.Logger;
 import com.thatsoulyguy.terracraft.records.NameIDTag;
+import com.thatsoulyguy.terracraft.thread.TaskExecutor;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -179,147 +180,136 @@ public class RenderableObject implements Cloneable
     {
         data.queuedData = -1;
 
-        data.VAO = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(data.VAO);
-
-        synchronized (data.vertices)
+        TaskExecutor.QueueTask(() ->
         {
-            FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
-            float[] positionData = new float[data.vertices.size() * 3];
+            data.VAO = GL30.glGenVertexArrays();
+            GL30.glBindVertexArray(data.VAO);
+        });
 
-            for (int v = 0; v < data.vertices.size(); v++)
-            {
-                positionData[v * 3] = data.vertices.get(v).position.x;
-                positionData[v * 3 + 1] = data.vertices.get(v).position.y;
-                positionData[v * 3 + 2] = data.vertices.get(v).position.z;
-            }
+        FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
+        float[] positionData = new float[data.vertices.size() * 3];
 
-            positionBuffer.put(positionData).flip();
-            data.VBO = StoreDataAsFloat(positionBuffer, 0, 3);
+        for (int v = 0; v < data.vertices.size(); v++)
+        {
+            positionData[v * 3] = data.vertices.get(v).position.x;
+            positionData[v * 3 + 1] = data.vertices.get(v).position.y;
+            positionData[v * 3 + 2] = data.vertices.get(v).position.z;
         }
 
-        synchronized (data.vertices)
+        positionBuffer.put(positionData).flip();
+        TaskExecutor.QueueTask(() ->
+            data.VBO = StoreDataAsFloat(positionBuffer, 0, 3));
+
+        FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
+        float[] colorData = new float[data.vertices.size() * 3];
+
+        for (int c = 0; c < data.vertices.size(); c++)
         {
-            FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
-            float[] colorData = new float[data.vertices.size() * 3];
-
-            for (int c = 0; c < data.vertices.size(); c++)
-            {
-                colorData[c * 3] = data.vertices.get(c).color.x;
-                colorData[c * 3 + 1] = data.vertices.get(c).color.y;
-                colorData[c * 3 + 2] = data.vertices.get(c).color.z;
-            }
-
-            colorBuffer.put(colorData).flip();
-            data.CBO = StoreDataAsFloat(colorBuffer, 1, 3);
+            colorData[c * 3] = data.vertices.get(c).color.x;
+            colorData[c * 3 + 1] = data.vertices.get(c).color.y;
+            colorData[c * 3 + 2] = data.vertices.get(c).color.z;
         }
 
-        synchronized (data.vertices)
+        colorBuffer.put(colorData).flip();
+        TaskExecutor.QueueTask(() ->
+            data.CBO = StoreDataAsFloat(colorBuffer, 1, 3));
+
+        FloatBuffer textureBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 2);
+        float[] textureData = new float[data.vertices.size() * 2];
+
+        for (int t = 0; t < data.vertices.size(); t++)
         {
-            FloatBuffer textureBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 2);
-            float[] textureData = new float[data.vertices.size() * 2];
-
-            for (int t = 0; t < data.vertices.size(); t++)
-            {
-                textureData[t * 2] = data.vertices.get(t).textureCoordinates.x;
-                textureData[t * 2 + 1] = data.vertices.get(t).textureCoordinates.y;
-            }
-
-            textureBuffer.put(textureData).flip();
-            data.TBO = StoreDataAsFloat(textureBuffer, 2, 2);
+            textureData[t * 2] = data.vertices.get(t).textureCoordinates.x;
+            textureData[t * 2 + 1] = data.vertices.get(t).textureCoordinates.y;
         }
 
-        synchronized (data.indices)
-        {
-            IntBuffer indicesBuffer = MemoryUtil.memAllocInt(data.indices.size());
-            indicesBuffer.put(data.indices.stream().mapToInt(i -> i).toArray()).flip();
+        textureBuffer.put(textureData).flip();
+        TaskExecutor.QueueTask(() ->
+            data.TBO = StoreDataAsFloat(textureBuffer, 2, 2));
 
+        IntBuffer indicesBuffer = MemoryUtil.memAllocInt(data.indices.size());
+        indicesBuffer.put(data.indices.stream().mapToInt(i -> i).toArray()).flip();
+
+        TaskExecutor.QueueTask(() ->
+        {
             data.EBO = GL15.glGenBuffers();
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, data.EBO);
             GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL15.GL_DYNAMIC_DRAW);
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-        }
+        });
+
 
         data.queuedData++;
-
-        int error = GL11.glGetError();
-        if (error != GL11.GL_NO_ERROR)
-            Logger.WriteConsole("Gen OpenGL error detected: " + error, LogLevel.ERROR);
     }
 
     public void Generate()
     {
-        data.shader.Generate();
-
-        data.VAO = GL30.glGenVertexArrays();
-        GL30.glBindVertexArray(data.VAO);
-
-        synchronized (data.vertices)
+        TaskExecutor.QueueTask(() ->
         {
-            FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
-            float[] positionData = new float[data.vertices.size() * 3];
+            data.shader.Generate();
+            data.VAO = GL30.glGenVertexArrays();
+            GL30.glBindVertexArray(data.VAO);
+        });
 
-            for (int v = 0; v < data.vertices.size(); v++)
-            {
-                positionData[v * 3] = data.vertices.get(v).position.x;
-                positionData[v * 3 + 1] = data.vertices.get(v).position.y;
-                positionData[v * 3 + 2] = data.vertices.get(v).position.z;
-            }
+        FloatBuffer positionBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
+        float[] positionData = new float[data.vertices.size() * 3];
 
-            positionBuffer.put(positionData).flip();
-            data.VBO = StoreDataAsFloat(positionBuffer, 0, 3);
+        for (int v = 0; v < data.vertices.size(); v++)
+        {
+            positionData[v * 3] = data.vertices.get(v).position.x;
+            positionData[v * 3 + 1] = data.vertices.get(v).position.y;
+            positionData[v * 3 + 2] = data.vertices.get(v).position.z;
         }
 
-        synchronized (data.vertices)
+        positionBuffer.put(positionData).flip();
+        TaskExecutor.QueueTask(() ->
+            data.VBO = StoreDataAsFloat(positionBuffer, 0, 3));
+
+        FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
+        float[] colorData = new float[data.vertices.size() * 3];
+
+        for (int c = 0; c < data.vertices.size(); c++)
         {
-            FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 3);
-            float[] colorData = new float[data.vertices.size() * 3];
-
-            for (int c = 0; c < data.vertices.size(); c++)
-            {
-                colorData[c * 3] = data.vertices.get(c).color.x;
-                colorData[c * 3 + 1] = data.vertices.get(c).color.y;
-                colorData[c * 3 + 2] = data.vertices.get(c).color.z;
-            }
-
-            colorBuffer.put(colorData).flip();
-            data.CBO = StoreDataAsFloat(colorBuffer, 1, 3);
+            colorData[c * 3] = data.vertices.get(c).color.x;
+            colorData[c * 3 + 1] = data.vertices.get(c).color.y;
+            colorData[c * 3 + 2] = data.vertices.get(c).color.z;
         }
 
-        synchronized (data.vertices)
+        colorBuffer.put(colorData).flip();
+        TaskExecutor.QueueTask(() ->
+            data.CBO = StoreDataAsFloat(colorBuffer, 1, 3));
+
+        FloatBuffer textureBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 2);
+        float[] textureData = new float[data.vertices.size() * 2];
+
+        for (int t = 0; t < data.vertices.size(); t++)
         {
-            FloatBuffer textureBuffer = MemoryUtil.memAllocFloat(data.vertices.size() * 2);
-            float[] textureData = new float[data.vertices.size() * 2];
-
-            for (int t = 0; t < data.vertices.size(); t++)
-            {
-                textureData[t * 2] = data.vertices.get(t).textureCoordinates.x;
-                textureData[t * 2 + 1] = data.vertices.get(t).textureCoordinates.y;
-            }
-
-            textureBuffer.put(textureData).flip();
-            data.TBO = StoreDataAsFloat(textureBuffer, 2, 2);
+            textureData[t * 2] = data.vertices.get(t).textureCoordinates.x;
+            textureData[t * 2 + 1] = data.vertices.get(t).textureCoordinates.y;
         }
 
-        synchronized (data.indices)
-        {
-            IntBuffer indicesBuffer = MemoryUtil.memAllocInt(data.indices.size());
-            indicesBuffer.put(data.indices.stream().mapToInt(i -> i).toArray()).flip();
+        textureBuffer.put(textureData).flip();
+        TaskExecutor.QueueTask(() ->
+        data.TBO = StoreDataAsFloat(textureBuffer, 2, 2));
 
+        IntBuffer indicesBuffer = MemoryUtil.memAllocInt(data.indices.size());
+        indicesBuffer.put(data.indices.stream().mapToInt(i -> i).toArray()).flip();
+
+        TaskExecutor.QueueTask(() ->
+        {
             data.EBO = GL15.glGenBuffers();
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, data.EBO);
             GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL15.GL_DYNAMIC_DRAW);
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-        }
+        });
 
         data.queuedData++;
 
-        data.shader.Use();
-        data.shader.SetUniform("diffuse", 0);
-
-        int error = GL11.glGetError();
-        if (error != GL11.GL_NO_ERROR)
-            Logger.WriteConsole("OpenGL error detected: " + error, LogLevel.ERROR);
+        TaskExecutor.QueueTask(() ->
+        {
+            data.shader.Use();
+            data.shader.SetUniform("diffuse", 0);
+        });
     }
 
     public void CleanUp()
