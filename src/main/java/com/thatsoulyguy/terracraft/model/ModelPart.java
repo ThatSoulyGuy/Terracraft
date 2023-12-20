@@ -19,7 +19,7 @@ public class ModelPart
     public String texture;
     public Transform transform;
     private int indicesIndex = 0;
-    
+
     private final List<Vertex> vertices = new ArrayList<>();
     private final List<Integer> indices = new ArrayList<>();
 
@@ -29,6 +29,13 @@ public class ModelPart
     {
         object.data.transform.position = transform.position;
         object.data.transform.rotation = transform.rotation;
+    }
+
+    public ModelPart SetPivot(Vector3f pivot)
+    {
+        transform.pivot = pivot;
+
+        return this;
     }
 
     public ModelPart AddCube(Vector3f position, Vector3f size)

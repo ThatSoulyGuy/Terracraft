@@ -15,7 +15,6 @@ public class World
     public static final int VIEW_DISTANCE = 1;
     public static ConcurrentHashMap<Vector3i, Chunk> chunks;
     private static ExecutorService worldExecutor;
-    private static List<Vector3i> chunkCheckList = new ArrayList<>();
 
     private static final Thread.UncaughtExceptionHandler handler = (thread, throwable) ->
     {

@@ -10,8 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class EntityModel
-{
+public abstract class EntityModel {
     public Map<String, ModelPart> parts = new HashMap<>();
     public Transform transform = Transform.Register(new Vector3f(0, 0, 0));
 
@@ -21,7 +20,7 @@ public abstract class EntityModel
 
         var modelPartsRaw = RegisterEntityParts();
 
-        for(ModelPart part : modelPartsRaw)
+        for (ModelPart part : modelPartsRaw)
             parts.put(part.name, part);
 
         RegisterRenderableParts();
@@ -29,12 +28,17 @@ public abstract class EntityModel
 
     public void Update()
     {
-        for(ModelPart part : parts.values())
+        for (ModelPart part : parts.values())
         {
             part.transform.position = transform.position;
             part.transform.rotation = transform.rotation;
             part.Update();
         }
+    }
+
+    public ModelPart GetPart(String name)
+    {
+        return parts.get(name);
     }
 
     public abstract List<ModelPart> RegisterEntityParts();

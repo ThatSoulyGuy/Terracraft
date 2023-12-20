@@ -1,5 +1,6 @@
 package com.thatsoulyguy.terracraft.math;
 
+import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public class Transform
@@ -7,6 +8,7 @@ public class Transform
     public Vector3f position;
     public Vector3f rotation;
     public Vector3f scale;
+    public Vector3f pivot;
     public Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
 
     public void Translate(Vector3f translation)
@@ -40,6 +42,7 @@ public class Transform
 
         out.position = position;
         out.rotation = rotation;
+        out.pivot = new Vector3f(position);
         out.scale = scale;
 
         return out;

@@ -12,28 +12,29 @@ public class EntityPig extends LivingEntity
     public void Initialize(Vector3f position)
     {
         LEBase_Initialize(new Vector3f(position));
-        transform.position = new Vector3f(position);
-
         model.Initialize(new Vector3f(position));
     }
 
     @Override
     public void Update()
     {
-        transform.Rotate(new Vector3f(0,  0.002f, 0));
-        AddMovement(MovementImpulse.FORWARD);
-
         LEBase_Update();
 
-        model.transform.position = transform.position;
+        transform.Rotate(new Vector3f(0, 0.006f, 0));
+        AddMovement(MovementImpulse.FORWARD);
+
+        model.transform.position = new Vector3f(transform.position.x, transform.position.y - 0.3f, transform.position.z);
         model.transform.rotation = transform.rotation;
+
+        //model.GetPart("head").transform.Rotate(new Vector3f(0.05f, 0.002f, 0.0042f));
+
         model.Update();
     }
 
     @Override
     public LivingEntityRegistration LE_Register()
     {
-        return LivingEntityRegistration.Register(5.0f, 2f);
+        return LivingEntityRegistration.Register(5.0f, 0.8f);
     }
 
     @Override

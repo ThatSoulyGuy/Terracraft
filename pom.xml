@@ -91,6 +91,14 @@
     </dependencies>
   </dependencyManagement>
 
+  <repositories>
+    <repository>
+      <id>noise-repo</id>
+      <name>noise-repo</name>
+      <url>https://repo.spongepowered.org/repository/maven-public/</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.openjfx</groupId>
@@ -276,6 +284,11 @@
       <groupId>com.code-disaster.steamworks4j</groupId>
       <artifactId>steamworks4j-server</artifactId>
       <version>${steamworks4j-server.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.spongepowered</groupId>
+      <artifactId>noise</artifactId>
+      <version>2.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

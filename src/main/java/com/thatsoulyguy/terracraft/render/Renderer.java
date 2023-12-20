@@ -5,6 +5,7 @@ import com.thatsoulyguy.terracraft.core.Logger;
 import com.thatsoulyguy.terracraft.player.Camera;
 import com.thatsoulyguy.terracraft.records.NameIDTag;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.opengl.*;
 
 import java.util.HashMap;
@@ -55,13 +56,30 @@ public class Renderer
 
             GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, object.data.EBO);
 
-            translation.setTranslation(object.data.transform.position);
-            translation.setRotationXYZ(object.data.transform.rotation.x, object.data.transform.rotation.y, object.data.transform.rotation.z);
+            Vector3f translatedPosition = new Vector3f(object.data.transform.position).sub(new Vector3f(object.data.transform.pivot));
+
+            Matrix4f rotationMatrix = new Matrix4f()
+                    .rotateXYZ(
+                            object.data.transform.rotation.x,
+                            object.data.transform.rotation.y,
+                            object.data.transform.rotation.z
+                    );
+
+            Vector3f rotatedPosition = rotationMatrix.transformPosition(translatedPosition);
+            Vector3f finalPosition = rotatedPosition.add(new Vector3f(object.data.transform.pivot));
+
+            translation.setTranslation(finalPosition);
+            translation.setRotationXYZ(
+                    object.data.transform.rotation.x,
+                    object.data.transform.rotation.y,
+                    object.data.transform.rotation.z
+            );
             translation.scale(object.data.transform.scale);
 
             object.data.shader.Use();
             object.data.shader.SetUniform("projection", camera.projection);
             object.data.shader.SetUniform("view", camera.view);
+
             object.data.shader.SetUniform("model", translation);
 
             if(!object.data.cullBackfaces)

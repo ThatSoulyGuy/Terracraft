@@ -12,6 +12,7 @@ public abstract class LivingEntity extends Entity
     public float maxHealth;
 
     public float movementSpeed;
+    public boolean invertMovement;
 
     public void LEBase_Initialize(Vector3f position)
     {
@@ -22,6 +23,7 @@ public abstract class LivingEntity extends Entity
         health = registration.health;
         maxHealth = registration.maxHealth;
         movementSpeed = registration.movementSpeed;
+        invertMovement = registration.invertMovement;
     }
 
     public void LEBase_Update()
@@ -36,7 +38,7 @@ public abstract class LivingEntity extends Entity
         float moveStep = movementSpeed * deltaTime;
         Vector3f potentialPosition = new Vector3f(transform.position);
 
-        float yawRadians = (float) Math.toRadians(transform.rotation.y);
+        float yawRadians = transform.rotation.y;
         Vector3f forward = new Vector3f(
                 (float) -Math.sin(yawRadians),
                 0,
@@ -51,14 +53,22 @@ public abstract class LivingEntity extends Entity
 
         if (direction == MovementImpulse.FORWARD || direction == MovementImpulse.BACKWARD)
         {
-            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? 1 : -1;
-            potentialPosition.add(right.mul(moveStep * directionMultiplier));
+            float directionMultiplier = (direction == MovementImpulse.FORWARD) ? movementSpeed : -movementSpeed;
+
+            if(invertMovement)
+                potentialPosition.add(right.mul(moveStep * directionMultiplier));
+            else
+                potentialPosition.add(forward.mul(moveStep * directionMultiplier));
         }
 
         if (direction == MovementImpulse.RIGHT || direction == MovementImpulse.LEFT)
         {
-            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? 1 : -1;
-            potentialPosition.add(forward.mul(moveStep * directionMultiplier));
+            float directionMultiplier = (direction == MovementImpulse.RIGHT) ? movementSpeed : -movementSpeed;
+
+            if(invertMovement)
+                potentialPosition.add(forward.mul(moveStep * directionMultiplier));
+            else
+                potentialPosition.add(right.mul(moveStep * directionMultiplier));
         }
 
         Vector3f collisionResponse = ProcessCollisions(potentialPosition);

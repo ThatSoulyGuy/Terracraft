@@ -46,7 +46,7 @@ public class Player extends LivingEntity
         UpdateMovement();
 
         data.camera.data.transform.position = new Vector3f(transform.position.x, transform.position.y + cameraOffset, transform.position.z);
-        transform.rotation.y = data.camera.data.yaw;
+        transform.rotation.y = Math.toRadians(data.camera.data.yaw);
     }
 
     private void UpdateControls()
@@ -150,7 +150,7 @@ public class Player extends LivingEntity
     @Override
     public LivingEntityRegistration LE_Register()
     {
-        return LivingEntityRegistration.Register(20.0f, 6.5f);
+        return LivingEntityRegistration.Register(20.0f, 2.5f, true);
     }
 
     @Override
